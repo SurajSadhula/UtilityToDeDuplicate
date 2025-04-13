@@ -29,14 +29,27 @@ function processLanguageFile(filePath, sharedKeys, sectionsToClean) {
       }
     });
   
-    // // Step 2: Ensure all shared keys exist in the shared section
-    // Object.keys(sharedKeys).forEach((key) => {
-    //   if (!data.shared[key]) {
-    //     data.shared[key] = sharedKeys[key];
-    //     changesMade = true;
-    //   }
-    // });
-  
+    // Step 2: Ensure all shared keys exist in the shared section
+    Object.keys(sharedKeys).forEach((key) => {
+      // Only add to shared section if key doesn't exist there yet
+      if (!data.shared || !data.shared[key]) {
+        // Find the original value from the local file's sections
+        let originalValue;
+        Object.keys(data).forEach((section) => {
+          if (data[section] && data[section][key]) {
+            originalValue = data[section][key];
+          }
+        });
+        
+        // If we found the value in local file, use it
+        if (originalValue) {
+          if (!data.shared) data.shared = {}; // Initialize shared if needed
+          data.shared[key] = originalValue; // Use LOCAL file's value
+          changesMade = true;
+        }
+      }
+    });
+    
     // Step 3: Save the file only if changes were made
     if (changesMade) {
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
