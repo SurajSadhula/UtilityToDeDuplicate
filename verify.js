@@ -14,9 +14,16 @@ function verifySharedKeysConsistency(directoryPath) {
 
   // Collect shared keys from all files
   const sharedKeysMap = new Map();
-  let referenceKeys = null;
   let hasErrors = false;
 
+  //Set the en.json shared section keys as referenceKeys
+  const enFile = files.find((f) => path.basename(f).toLocaleLowerCase() === 'en.json');
+  const enFileName = path.basename(enFile);
+  const enFileData = JSON.parse(fs.readFileSync(enFile), 'utf8');
+  let referenceKeys = Object.keys(enFileData.shared).sort();
+  sharedKeysMap.set(enFileName, { keys: referenceKeys, status: 'reference' });
+  console.log(`✓ ${enFileName}: Set as reference (${referenceKeys.length} keys)`);
+   
   files.forEach(file => {
     try {
       const data = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -29,14 +36,6 @@ function verifySharedKeysConsistency(directoryPath) {
       }
 
       const currentKeys = Object.keys(data.shared).sort();
-      
-      // Set the first file's keys as reference
-      if (referenceKeys === null) {
-        referenceKeys = currentKeys;
-        sharedKeysMap.set(filename, { keys: currentKeys, status: 'reference' });
-        console.log(`✓ ${filename}: Set as reference (${currentKeys.length} keys)`);
-        return;
-      }
 
       // Compare with reference keys
       const isMatch = JSON.stringify(currentKeys) === JSON.stringify(referenceKeys);
