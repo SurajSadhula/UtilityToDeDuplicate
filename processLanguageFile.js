@@ -18,7 +18,7 @@ function processLanguageFile(filePath, sharedKeys, sectionsToClean) {
           if (sharedKeys[key] && data[section][key] !== undefined) {
             // Move to shared section if not already there
             if (!data.shared[key]) {
-              data.shared[key] = sharedKeys[key];
+              data.shared[key] = data[section][key];
               changesMade = true;
             }
             // Remove from original section
@@ -29,13 +29,13 @@ function processLanguageFile(filePath, sharedKeys, sectionsToClean) {
       }
     });
   
-    // Step 2: Ensure all shared keys exist in the shared section
-    Object.keys(sharedKeys).forEach((key) => {
-      if (!data.shared[key]) {
-        data.shared[key] = sharedKeys[key];
-        changesMade = true;
-      }
-    });
+    // // Step 2: Ensure all shared keys exist in the shared section
+    // Object.keys(sharedKeys).forEach((key) => {
+    //   if (!data.shared[key]) {
+    //     data.shared[key] = sharedKeys[key];
+    //     changesMade = true;
+    //   }
+    // });
   
     // Step 3: Save the file only if changes were made
     if (changesMade) {

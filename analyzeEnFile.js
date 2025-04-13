@@ -1,5 +1,12 @@
 const fs = require("fs");
 const path = require("path");
+
+function normalizeString(str) {
+  return str
+    .replace(/[.,;:!?'"]/g, '')  // Remove common punctuation
+    .trim()                      // Trim whitespace
+    .toLowerCase();              // Normalize case
+}
 function analyzeAndProcessEnglishFile(filePath) {
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const sharedValues = {};
@@ -14,8 +21,9 @@ function analyzeAndProcessEnglishFile(filePath) {
           const value = data[section][key];
           // Only process if the value is a string
           if (typeof value === "string") {
-            if (!valueToKeys[value]) valueToKeys[value] = [];
-            valueToKeys[value].push({ section, key });
+            const normalizedValue = normalizeString(value);
+            if (!valueToKeys[normalizedValue]) valueToKeys[normalizedValue] = [];
+            valueToKeys[normalizedValue].push({ section, key, originalValue: value });
           }
         });
       }
@@ -25,11 +33,12 @@ function analyzeAndProcessEnglishFile(filePath) {
     Object.keys(valueToKeys).forEach((value) => {
       const keys = valueToKeys[value];
       if (keys.length > 1) {
+        const representativeValue = keys[0].originalValue;
         // For each key that shares this value, add it to sharedValues
         keys.forEach(({ key }) => {
           // Only add if it's a proper string key (not numeric index)
           if (isNaN(Number(key))) {
-            sharedValues[key] = value;
+            sharedValues[key] = representativeValue;
           }
         });
   
